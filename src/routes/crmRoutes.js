@@ -4,6 +4,9 @@ import {addNewContact,
         updateContact,
         deleteContact
     } from '../controllers/crmController'
+
+import {login, register, loginRequired} from '../controllers/userContoller'
+
 const routes = (app) => {
 
     // lets apply a middleware
@@ -16,13 +19,21 @@ const routes = (app) => {
         },getContacts)
 
         
-        .post(addNewContact); // post a specific contact
+        .post(loginRequired, addNewContact); // post a specific contact
         
     
     app.route('/contact/:contactID')
-        .get(getContactWithID) // get a specific contact
-        .put(updateContact) // update a specific contact
-        .delete(deleteContact) // delete a specific contact
+        .get(loginRequired, getContactWithID) // get a specific contact
+        .put(loginRequired, updateContact) // update a specific contact
+        .delete(loginRequired, deleteContact) // delete a specific contact
+
+    // registration route
+    app.route('/auth/register')
+        .post(register)
+
+    // login route
+    app.route('/auth/login')
+        .post(login)
         
 };
 

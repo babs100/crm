@@ -6,6 +6,9 @@ import helmet from 'helmet'
 import RateLimit from 'express-rate-limit'
 import cookieParser from 'cookie-parser'
 import csrf from 'csurf'
+import jsonwebtoken from 'jsonwebtoken'
+import User from './src/models/userModel'
+
 
 const app = express();
 const PORT = 4000;
@@ -26,7 +29,7 @@ const limiter = new RateLimit({
     delayMs:0 // disables delays
 })
 
-app.use(limiter())
+app.use(limiter)
 
 // mongoose connection
 mongoose.Promise = global.Promise;
@@ -38,6 +41,21 @@ mongoose.connect('mongodb://localhost/CRMdb', {
 //body-parser setup top parse json
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
+
+// set-up jwt
+app.use((req, res, next) => {
+    if (req.headers && req.headers.authorization && req.headers.authorization.split()[0] === 'Bearer') {
+        jsonwebtoken.verify(req.headers.authorization.split()[1], 'RESTFULAPIs', (err, decode) => {
+            if (err) req.user =undefined;
+            else req.user = decode;
+
+            next()
+        });
+    } else {
+        req.user = undefined;
+        next()
+    }
+})
 
 // bodyParser for form only
 const parseForm = bodyParser.urlencoded({extended:false})
